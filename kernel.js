@@ -54,7 +54,8 @@ function Dispatcher () {
     function distributeOutputs (part) {
 	this.allParts.foreach ( 
 	    (part) => {
-		part.outputQueue.foreach(deliver);
+		part.outputCollection.foreach(deliver);
+		part.outputCollection.reset ();
 	    }
 	)
     }
@@ -66,7 +67,7 @@ function Schematic (parent, nameInParent) {
     var parent = parent;
     var name = nameInParent;
     var inputQueue = new InputQueue (this);
-    var outputQueue = new OutputCollection (this);
+    var outputCollection = new OutputCollection (this);
     var parts = new PartsCollection (this);
     var isSchematic = true;
 
@@ -93,7 +94,7 @@ function Leaf (parent, nameInParent reactorFunction) {
     var parent = parent;
     var name = nameInParent;
     var inputQueue = new InputQueue (this);
-    var outputQueue = new OutputCollection (this);
+    var outputCollection = new OutputCollection (this);
     var isSchematic = false;
     function isBusy () { return false; }
     function isNotBusy () { return ! this.isBusy (); },
@@ -113,42 +114,24 @@ function PartsCollection (owner) = {
 	}
     };
     function add (part) {
-	collection.push (part);
+	this.collection.push (part);
     };
     function foreach (func) {
-	collection.foreach (func);
+	this.collection.foreach (func);
     };
 }
 
 function InputQueue (owner) = {
     var owner = owner;
+    var q = [];
+    function inputQueueLength () { return this.q.length; }
+    function dequeueInput () { return this.q.shift(); }
+    function enqueueInput (x) { this.q.push(x); }
 }
     
 function OutputCollection (owner) = {
     var owner = owner;
+    var collection = [];
+    function foreach (func) { collection.foreach (func); };
+    function reset () { collection = []; };
 }
-
-Queue
-foreachDequeue
-push
-pop
-length
-new InputQueue (this)
-
-Collection
-foreach
-new PartsCollection (this)
-
-
-part
-enqueueInput
-enqueueOutput
-dequeueInput
-inputQueueLength()
-outputQueue.foreach
-outputQueue.reset
-
-new OutputCollection (this)
-new ReceiverCollection (this)
-new DataQueue (this)
-
