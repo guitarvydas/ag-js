@@ -134,4 +134,6 @@ function OutputCollection (owner) = {
     var collection = [];
     function foreach (func) { collection.foreach (func); };
     function reset () { collection = []; };
-}
+};
+
+    function ReceiversCollections (owner) {

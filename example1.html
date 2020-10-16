@@ -1,0 +1,103 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html> <head>
+<title>Simple Example Concurrent File Loader</title>
+</head>
+
+<body>
+<h1></h1>
+
+</script>
+
+<div>
+<p id="text1"></>
+<script>
+function TextComponent (id) {
+  var parent;
+  var id = id;
+  var isSchematic = false;
+  var inputQueue = [];
+  function react (event) {
+    document.getElementById(id).innerHTML = event.data;
+  }
+}
+var text1 = new TextComponent ("text1");
+</script>
+
+<input type="file" id="fileToLoad1" onchange="fileToLoad1.react('changed')">Select a File to Load</input>
+<script>
+function FileSelectorComponent (parent) {
+  var parent = parent;main.ag
+  var id = "fileSelector1";
+  var isSchematic = false;
+  var inputQueue = [];
+  function react (event) {
+    if (event.pin = "changed") {
+      var filename = document.getElementById(id).value;
+      kernel.send (this, {pin: 'filename', data: filename});
+      kernel.io ();
+    }
+  }
+}
+var fileToLoad1 = new FileSectorComponent ("fileToLoad1");
+</script>
+
+<script>
+function TopComponent () {
+  var isSchematic = true; 
+  var text = text1;
+  var fileSelector = fileToLoad1;
+  var inputQueue = []; 
+  var wires = [];
+  text.parent = this;
+  fileSelector.parent= this;
+  wires[0] = new Wire ({ sender : {fileSelector, 'filename'}, receivers : [{part: text, pin:'setText'}] }); // map each output pin {part,pin} to an array of receivers [{part,pin},...]
+  var parts = [text,fileSelector];
+  function isBusy () = { return parts.some(isBusy); }
+  function isReady () = { return ( (inputQueue.length > 0) && (!this.isBusy()) ); }
+  function react (event) {
+      var pin = event.pin;
+      var data = event.data;
+      var wire = kernel.findWire (this, pin);
+      if (wire) { wire.dispatch (data); };	  
+  };
+  function consumeOneEventIfReady () {
+    if (this.ready()) {
+      var event = inputQueue.pop ();
+      this.react (event);
+    }
+  };
+}
+
+function Kernel (top) {
+  var topPart = top;
+  var inputQueue = []; 
+  function send (part, outputEvent) {
+    var outputPin = outputEvent.pin; 
+    var outputData = outputEvent.data;
+    var parentSchematic = part.parent;
+    var outputWire = findWire (part, outputPin);
+    outputWire.push (outputData);
+  };
+  function dispatch() {
+    topPart.foreach (consumeOneEventIfReady);
+    topPart.foreach (releaseOutputs);
+    while (this.anyPartHasInputs()) {
+      topPart.foreach (consumeOneEventIfReady);
+      topPart.foreach (releaseOutputs);
+    }
+  };
+  function io () {
+    this.dispatch ();
+  };
+}
+
+var kernel = new Kernel (new TopComponent());
+kernel.startDispatching ();
+</script>
+
+</div>
+
+<hr>
+<address></address>
+<!-- hhmts start -->Last modified: Fri Oct 16 16:35:16 EDT 2020 <!-- hhmts end -->
+</body> </html>
