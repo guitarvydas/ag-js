@@ -1,99 +1,142 @@
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
 <html> <head>
-<title>Simple Example Concurrent File Loader</title>
-</head>
+    <title>Simple Example Concurrent File Loader</title>
+  </head>
 
-<body>
-<h1></h1>
+  <body>
+    <h1></h1>
 
 </script>
 
 <div>
-<p id="text1"></>
+  <p id="text1"></>
 <script>
-function TextComponent (id) {
-  var parent;
-  var id = id;
-  var isSchematic = false;
-  var inputQueue = [];
-  function react (event) {
-    document.getElementById(id).innerHTML = event.data;
+  function TextComponent (id) {
+      var parent;
+      var id = id;
+      var isSchematic = false;
+      var inputQueue = [];
+      function react (event) {
+	  document.getElementById(id).innerHTML = event.data;
+      }
   }
-}
-var text1 = new TextComponent ("text1");
+  var text1 = new TextComponent ("text1");
 </script>
 
 <input type="file" id="fileToLoad1" onchange="fileToLoad1.react('changed')">Select a File to Load</input>
 <script>
-function FileSelectorComponent (parent) {
-  var parent = parent;main.ag
-  var id = "fileSelector1";
-  var isSchematic = false;
-  var inputQueue = [];
-  function react (event) {
-    if (event.pin = "changed") {
-      var filename = document.getElementById(id).value;
-      kernel.send (this, {pin: 'filename', data: filename});
-      kernel.io ();
-    }
+  function FileSelectorComponent (parent) {
+      var parent = parent;
+      var id = "fileSelector1";
+      var isSchematic = false;
+      var inputQueue = [];
+      function react (event) {
+	  if (event.pin = "changed") {
+	      var filename = document.getElementById(id).value;
+	      kernel.send (this, {pin: 'filename', data: filename});
+	      kernel.io ();
+	  }
+      };
   }
-}
-var fileToLoad1 = new FileSectorComponent ("fileToLoad1");
+  var fileToLoad1 = new FileSelectorComponent ("fileToLoad1");
 </script>
 
 <script>
-function TopComponent () {
-  var isSchematic = true; 
-  var text = text1;
-  var fileSelector = fileToLoad1;
-  var inputQueue = []; 
-  var wires = [];
-  text.parent = this;
-  fileSelector.parent= this;
-  wires[0] = new Wire ({ sender : {fileSelector, 'filename'}, receivers : [{part: text, pin:'setText'}] }); // map each output pin {part,pin} to an array of receivers [{part,pin},...]
-  var parts = [text,fileSelector];
-  function isBusy () = { return parts.some(isBusy); }
-  function isReady () = { return ( (inputQueue.length > 0) && (!this.isBusy()) ); }
-  function react (event) {
-      var pin = event.pin;
-      var data = event.data;
-      var wire = kernel.findWire (this, pin);
-      if (wire) { wire.dispatch (data); };	  
-  };
-  function consumeOneEventIfReady () {
-    if (this.ready()) {
-      var event = inputQueue.pop ();
-      this.react (event);
-    }
-  };
-}
+  function TopComponent () {
+      var isSchematic = true; 
+      var text = text1;
+      var fileSelector = fileToLoad1;
+      var inputQueue = []; 
+      var wires = [];
+      wires[0] = new Wire ({ sender : {part: fileSelector, pin: 'filename'}, receivers : [{part: text, pin:'setText'}] }); // map each output pin {part,pin} to an array of receivers [{part,pin},...]
+      var parts = [text,fileSelector];
+      text.parent = this;
+      fileSelector.parent= this;
+      function isBusy () { return parts.some(isBusy); }
+      function isReady () { return ( (inputQueue.length > 0) && (!this.isBusy()) ); }
+      function react (event) {
+	  var pin = event.pin;
+	  var data = event.data;
+	  var wire = kernel.findWire (this, this, pin);
+	  wire.deliver (data);	  
+      };
+      function consumeOneEventIfReady () {
+	  if (this.ready()) {
+	      var event = inputQueue.pop ();
+	      this.react (event);
+	  }
+      };
+  }
 
-function Kernel (top) {
-  var topPart = top;
-  var inputQueue = []; 
-  function send (part, outputEvent) {
-    var outputPin = outputEvent.pin; 
-    var outputData = outputEvent.data;
-    var parentSchematic = part.parent;
-    var outputWire = findWire (part, outputPin);
-    outputWire.push (outputData);
+  function Wire (wobject) {
+      var sender = wobject.sender;
+      var receivers = wobject.receivers;
+      var isNC = wobject.isNC;
+      var senderPin = wobject.senderPin;
+      function lockReceivers () { // implement if using multi-tasking or bare-metal
+	  // disable preemption
+	  // this.receivers.foreach (lock);
+	  // enable preemption
+      };
+      function unlockReceivers () { // implement if using multi-tasking or bare-metal
+	  // disable preemption
+	  // this.receivers.foreach (unlock);
+	  // enable preemption
+      };
+      function deliver (data) {
+	  if (this.isNC) {
+	      console.log("Part " + sender.name + " outputs " + data + " on pin " + senderPin);
+	  } else {
+	      this.lockReceivers ();
+	      receivers.foreach(
+		  function (r) {
+		      var pin = r.pin;
+		      r.part.inputQueue.push ( {pin, data} );
+		  })
+	      this.unlockReceivers ();
+	  }
+      };
+  }
+  
+  function Kernel (top) {
+      var topPart = top;
+      function findWire (schematic, senderPart, senderPin) {
+	  var i;
+	  for (i = 0; i < schematic.wires.length ; i += 1) {
+	      var sender = schematic.wires[i].sender;
+	      if (sender.part == senderPart && sender.pin == senderPin) {
+		  return wire;
+	      }
+	  }
+	  throw "can't find wire for {" + part.name + ", " + outputPin + "}";
+      };
+      
+      function send (part, outputEvent) {
+	  var outputPin = outputEvent.pin; 
+	  var outputData = outputEvent.data;
+	  var parentSchematic = part.parent;
+	  var outputWire = this.findWire (part.parent, part, outputPin);
+	  outputWire.deliver (outputData);
+      };
+      
+      function dispatch() {
+	  topPart.foreach (consumeOneEventIfReady);
+	  while (this.anyPartHasInputs()) {
+	      topPart.foreach (consumeOneEventIfReady);
+	  }
+      };
+      
+      function io () {
+	  this.dispatch ();
+      };
   };
-  function dispatch() {
-    topPart.foreach (consumeOneEventIfReady);
-    topPart.foreach (releaseOutputs);
-    while (this.anyPartHasInputs()) {
-      topPart.foreach (consumeOneEventIfReady);
-      topPart.foreach (releaseOutputs);
-    }
-  };
-  function io () {
-    this.dispatch ();
-  };
-}
 
-var kernel = new Kernel (new TopComponent());
-kernel.startDispatching ();
 </script>
+<script>
+  var topPart = new TopComponent();
+  var kernel = new Kernel (topPart);
+</script>
+      
 
 </div>
 
