@@ -18,6 +18,12 @@
       this.inputQueue = [];
       this.react = function (event) {
 	  document.getElementById(id).innerHTML = event.data;
+      this.consumeOneEventIfReady = function () {
+	  if (this.ready()) {
+	      var event = this.inputQueue.pop ();
+	      this.react (event);
+	  }
+      };
       }
   }
   var text1 = new TextComponent ("text1");
@@ -35,6 +41,12 @@
 	      var filename = document.getElementById(id).value;
 	      kernel.send (this, {pin: 'filename', data: filename});
 	      kernel.io ();
+	  }
+      };
+      this.consumeOneEventIfReady = function () {
+	  if (this.ready()) {
+	      var event = this.inputQueue.pop ();
+	      this.react (event);
 	  }
       };
   }
@@ -65,7 +77,7 @@
       };
       this.consumeOneEventIfReady = function () {
 	  if (this.ready()) {
-	      var event = inputQueue.pop ();
+	      var event = this.inputQueue.pop ();
 	      this.react (event);
 	  }
       };
@@ -123,9 +135,9 @@
       };
       
       this.dispatch = function () {
-	  topPart.forEach (consumeOneEventIfReady);
+	  this.topPart.forEach (consumeOneEventIfReady);
 	  while (this.anyPartHasInputs()) {
-	      topPart.forEach (consumeOneEventIfReady);
+	      this.topPart.forEach (consumeOneEventIfReady);
 	  }
       };
       
