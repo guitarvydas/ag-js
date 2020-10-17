@@ -12,11 +12,11 @@
   <p id="text1"></>
 <script>
   function TextComponent (id) {
-      var parent;
-      var id = id;
-      var isSchematic = false;
-      var inputQueue = [];
-      function react (event) {
+      this.parent = null;
+      this.id = id;
+      this.isSchematic = false;
+      this.inputQueue = [];
+      this.react = function (event) {
 	  document.getElementById(id).innerHTML = event.data;
       }
   }
@@ -25,12 +25,12 @@
 
 <input type="file" id="fileToLoad1" onchange="fileToLoad1.react('changed')">Select a File to Load</input>
 <script>
-  function FileSelectorComponent (parent) {
-      var parent = parent;
-      var id = "fileSelector1";
-      var isSchematic = false;
-      var inputQueue = [];
-      function react (event) {
+  function FileSelectorComponent (id) {
+      this.parent = null;
+      this.id = id;
+      this.isSchematic = false;
+      this.inputQueue = [];
+      this.react = function (event) {
 	  if (event.pin = "changed") {
 	      var filename = document.getElementById(id).value;
 	      kernel.send (this, {pin: 'filename', data: filename});
@@ -43,24 +43,27 @@
 
 <script>
   function TopComponent () {
-      var isSchematic = true; 
-      var text = text1;
-      var fileSelector = fileToLoad1;
-      var inputQueue = []; 
-      var wires = [];
-      wires[0] = new Wire ({ sender : {part: fileSelector, pin: 'filename'}, receivers : [{part: text, pin:'setText'}] }); // map each output pin {part,pin} to an array of receivers [{part,pin},...]
-      var parts = [text,fileSelector];
-      text.parent = this;
-      fileSelector.parent= this;
-      function isBusy () { return parts.some(isBusy); }
-      function isReady () { return ( (inputQueue.length > 0) && (!this.isBusy()) ); }
-      function react (event) {
+      this.isSchematic = true; 
+      this.text = text1;
+      this.fileSelector = fileToLoad1;
+      this.inputQueue = []; 
+      this.wires = [];
+      this.wires[0] = new Wire ({ sender : {part: this.fileSelector, pin: 'filename'}, receivers : [{part: this.text, pin:'setText'}] }); // map each output pin {part,pin} to an array of receivers [{part,pin},...]
+      this.parts = [this.text,this.fileSelector];
+      this.text.parent = this;
+      this.fileSelector.parent= this;
+      this.isBusy = function () { return this.parts.some(isBusy); }
+      this.isReader = function () { return ( 
+	  (this.inputQueue.length > 0)
+	      && (!this.isBusy())
+      )};
+      this.react = function (event) {
 	  var pin = event.pin;
 	  var data = event.data;
 	  var wire = kernel.findWire (this, this, pin);
 	  wire.deliver (data);	  
       };
-      function consumeOneEventIfReady () {
+      this.consumeOneEventIfReady = function () {
 	  if (this.ready()) {
 	      var event = inputQueue.pop ();
 	      this.react (event);
@@ -69,26 +72,26 @@
   }
 
   function Wire (wobject) {
-      var sender = wobject.sender;
-      var receivers = wobject.receivers;
-      var isNC = wobject.isNC;
-      var senderPin = wobject.senderPin;
-      function lockReceivers () { // implement if using multi-tasking or bare-metal
+      this.sender = wobject.sender;
+      this.receivers = wobject.receivers;
+      this.isNC = wobject.isNC;
+      this.senderPin = wobject.senderPin;
+      this.lockReceivers = function () { // implement if using multi-tasking or bare-metal
 	  // disable preemption
-	  // this.receivers.foreach (lock);
+	  // this.receivers.forEach (lock);
 	  // enable preemption
       };
-      function unlockReceivers () { // implement if using multi-tasking or bare-metal
+      this.unlockReceivers = function () { // implement if using multi-tasking or bare-metal
 	  // disable preemption
-	  // this.receivers.foreach (unlock);
+	  // this.receivers.forEach (unlock);
 	  // enable preemption
       };
-      function deliver (data) {
+      this.deliver = function (data) {
 	  if (this.isNC) {
 	      console.log("Part " + sender.name + " outputs " + data + " on pin " + senderPin);
 	  } else {
 	      this.lockReceivers ();
-	      receivers.foreach(
+	      this.receivers.forEach(
 		  function (r) {
 		      var pin = r.pin;
 		      r.part.inputQueue.push ( {pin, data} );
@@ -99,19 +102,19 @@
   }
   
   function Kernel (top) {
-      var topPart = top;
-      function findWire (schematic, senderPart, senderPin) {
+      this.topPart = top;
+      this.findWire = function (schematic, senderPart, senderPin) {
 	  var i;
 	  for (i = 0; i < schematic.wires.length ; i += 1) {
 	      var sender = schematic.wires[i].sender;
 	      if (sender.part == senderPart && sender.pin == senderPin) {
-		  return wire;
+		  return schematic.wires[i];
 	      }
 	  }
 	  throw "can't find wire for {" + part.name + ", " + outputPin + "}";
       };
       
-      function send (part, outputEvent) {
+      this.send = function (part, outputEvent) {
 	  var outputPin = outputEvent.pin; 
 	  var outputData = outputEvent.data;
 	  var parentSchematic = part.parent;
@@ -119,14 +122,14 @@
 	  outputWire.deliver (outputData);
       };
       
-      function dispatch() {
-	  topPart.foreach (consumeOneEventIfReady);
+      this.dispatch = function () {
+	  topPart.forEach (consumeOneEventIfReady);
 	  while (this.anyPartHasInputs()) {
-	      topPart.foreach (consumeOneEventIfReady);
+	      topPart.forEach (consumeOneEventIfReady);
 	  }
       };
       
-      function io () {
+      this.io = function () {
 	  this.dispatch ();
       };
   };
