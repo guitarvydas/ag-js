@@ -112,9 +112,20 @@
 	  }
       };
   }
-  
+
+  function makeFlatPartsList (part, krnl) {
+      // create a flat list of all parts in the graph
+      // just a convenience function for dispatch
+      krnl.allParts.push (part);
+      if (part.isSchematic) {
+	  var parts = part.parts;
+	  parts.forEach(makeFlatPartsList, krnl);
+      }
+  };
+
   function Kernel (top) {
       this.topPart = top;
+      this.allParts = [];
       this.findWire = function (schematic, senderPart, senderPin) {
 	  var i;
 	  for (i = 0; i < schematic.wires.length ; i += 1) {
@@ -134,17 +145,19 @@
 	  outputWire.deliver (outputData);
       };
       
+      this.io = function () {
+	  this.dispatch ();
+      };
+
       this.dispatch = function () {
-	  this.topPart.forEach (consumeOneEventIfReady);
+	  this.allParts.forEach (consumeOneEventIfReady);
 	  while (this.anyPartHasInputs()) {
 	      this.topPart.forEach (consumeOneEventIfReady);
 	  }
       };
       
-      this.io = function () {
-	  this.dispatch ();
-      };
-  };
+      makeFlatPartsList (this.topPart, this);
+};
 
 </script>
 <script>
