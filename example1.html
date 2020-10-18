@@ -45,8 +45,8 @@ function FileSelectorComponent (id) {
     this.isReady = function () { return ( this.inputQueue.length > 0 ); };
     this.react = function (event) {
 	if (event.pin == "changed") {
-	    var filename = document.getElementById(id).value;
-	    kernel.send (this, {pin: 'filename', data: filename});
+	    var filedesc = document.getElementById(id).files[0];
+	    kernel.send (this, {pin: 'filename', data: filedesc});
 	    kernel.io ();
 	}
     };
