@@ -20,11 +20,13 @@ function TextComponent (id) {
     this.react = function (event) {
 	if (event.pin == "setText") {
 	    var reader = new FileReader();
-	    reader.readAsText(event.data)
-	    var contents = reader.result;
-	    document.getElementById(id).innerHTML =
-		"FILE REQUESTED: " + event.data +
-		"<BR>FILE CONTENTS:<BR>" + contents;
+	    reader.onload = function (e) {
+		var contents = e.target.result;
+		document.getElementById(id).innerHTML =
+		    "4FILE REQUESTED: " + event.data +
+		    "<BR>FILE CONTENTS:<BR>" + contents;
+	    };
+	    reader.readAsText(event.data);
 	}
     };
     this.hasInputs = function () {
