@@ -19,7 +19,8 @@ function TextComponent (id) {
     this.isReady = function () { return ( this.inputQueue.length > 0 ); };
     this.react = function (event) {
 	if (event.pin == "setText") {
-	    document.getElementById(id).innerHTML = "FILE REQUESTED: " + event.data;
+	    document.getElementById(id).innerHTML =
+		"FILE REQUESTED: " + event.data;
 	}
     };
     this.hasInputs = function () {
@@ -45,8 +46,8 @@ function FileSelectorComponent (id) {
     this.isReady = function () { return ( this.inputQueue.length > 0 ); };
     this.react = function (event) {
 	if (event.pin == "changed") {
-	    var filedesc = document.getElementById(id).files[0];
-	    kernel.send (this, {pin: 'filename', data: filedesc});
+	    var fileDescriptor = document.getElementById(id).files[0];
+	    kernel.send (this, {pin: 'filename', data: fileDescriptor});
 	    kernel.io ();
 	}
     };
