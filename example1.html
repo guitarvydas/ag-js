@@ -20,7 +20,7 @@ function TextComponent (id) {
 	document.getElementById(id).innerHTML = event.data;
     };
     this.anyPartHasInputs = function () {
-	return (0 < inputQueue.length);
+	return (0 < this.inputQueue.length);
     };
     this.consumeOneEventIfReady = function () {
 	if (this.ready()) {
@@ -47,7 +47,7 @@ function FileSelectorComponent (id) {
 	}
     };
     this.anyPartHasInputs = function () {
-	return (0 < inputQueue.length);
+	return (0 < this.inputQueue.length);
     };
     this.consumeOneEventIfReady = function () {
 	if (this.ready()) {
@@ -83,7 +83,14 @@ function TopComponent () {
 	wire.deliver (data);	  
     };
     this.anyPartHasInputs = function () {
-	return (0 < inputQueue.length) || this.parts.some(anyPartHasInputs);
+	var ps = this.parts;
+	var x0 = ps[0];
+	var x1 = ps[1];
+	var b  = (0 < this.inputQueue.length);
+	var b0 = x0.anyPartHasInputs();
+	var b1 = x1.anyPartHasInputs();
+	var pbs = ps.some(anyPartHasInputs);
+	return (0 < this.inputQueue.length) || ps.some(anyPartHasInputs);
     };
     this.consumeOneEventIfReady = function () {
         parts.forEach(consumeOneEventIfReady);
