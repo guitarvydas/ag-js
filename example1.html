@@ -9,21 +9,29 @@
 </script>
 
 <div>
-  <p id="text1"></>
+  <p id="text1"></p>
 <script>
 function TextComponent (id) {
     this.parent = null;
     this.id = id;
     this.isSchematic = false;
     this.inputQueue = [];
+    this.isReady = function () { return ( this.inputQueue.length > 0 ); };
     this.react = function (event) {
-	document.getElementById(id).innerHTML = event.data;
+	console.log("TextComponent react, part: " + this +
+		   " pin=" + event.pin +
+		   " data=" + event.data);
+	if (event.pin == "setText") {
+	    document.getElementById(id).innerHTML = event.data;
+	}
     };
     this.hasInputs = function () {
+	console.log("Text hasInputs " + (0 < this.inputQueue.length));
 	return (0 < this.inputQueue.length);
     };
     this.consumeOneEventIfReady = function () {
-	if (this.ready()) {
+	console.log("TextComponent isReady()=" + this.isReady());
+	if (this.isReady()) {
             var event = this.inputQueue.pop ();
 	    this.react (event);
 	}
@@ -32,25 +40,32 @@ function TextComponent (id) {
 var text1 = new TextComponent ("text1");
 </script>
 
-<input type="file" id="fileToLoad1" onchange="fileToLoad1.react('changed')">Select a File to Load</input>
+<input type="file" id="fileToLoad1" onchange="fileToLoad1.react({pin:'changed',data:null})">Select a File to Load</input>
 <script>
 function FileSelectorComponent (id) {
     this.parent = null;
     this.id = id;
     this.isSchematic = false;
     this.inputQueue = [];
+    this.isReady = function () { return ( this.inputQueue.length > 0 ); };
     this.react = function (event) {
-	if (event.pin = "changed") {
+	console.log("FileSelectorComponent react, part: " + this + 
+		    " event.pin=" + event.pin +
+		    " event.data=" + event.data);
+	if (event.pin == "changed") {
 	    var filename = document.getElementById(id).value;
+	    console.log("sending pin filename, data=" + filename);
 	    kernel.send (this, {pin: 'filename', data: filename});
 	    kernel.io ();
 	}
     };
     this.hasInputs = function () {
+	console.log("FileSelector hasInputs " + (0 < this.inputQueue.length));
 	return (0 < this.inputQueue.length);
     };
     this.consumeOneEventIfReady = function () {
-	if (this.ready()) {
+	console.log("FileSelectorComponent isReady()=" + this.isReady());
+	if (this.isReady()) {
 	    var event = this.inputQueue.pop ();
 	    this.react (event);
 	}
@@ -77,6 +92,7 @@ function TopComponent () {
 		&& (!this.isBusy())
 	)};
     this.react = function (event) {
+	console.log("Schematic react, part: " + this);
 	var pin = event.pin;
 	var data = event.data;
 	var wire = kernel.findWire (this, this, pin);
@@ -84,11 +100,12 @@ function TopComponent () {
     };
     this.hasInputs = function () {
 	return (0 < this.inputQueue.length) || 
-	    this.parts.some(child => child.hasInputs());
+	    this.parts.some(child => { return child.hasInputs() });
     };
     this.consumeOneEventIfReady = function () {
-        this.parts.forEach(p => p.consumeOneEventIfReady);
-	if (this.ready()) {
+	console.log("Top coeir");
+        this.parts.forEach(p => p.consumeOneEventIfReady());
+	if (this.isReady()) {
 	    var event = this.inputQueue.pop ();
 	    this.react (event);
 	}
