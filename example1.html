@@ -19,7 +19,7 @@ function TextComponent (id) {
     this.react = function (event) {
 	document.getElementById(id).innerHTML = event.data;
     };
-    this.anyPartHasInputs = function () {
+    this.hasInputs = function () {
 	return (0 < this.inputQueue.length);
     };
     this.consumeOneEventIfReady = function () {
@@ -46,7 +46,7 @@ function FileSelectorComponent (id) {
 	    kernel.io ();
 	}
     };
-    this.anyPartHasInputs = function () {
+    this.hasInputs = function () {
 	return (0 < this.inputQueue.length);
     };
     this.consumeOneEventIfReady = function () {
@@ -82,18 +82,12 @@ function TopComponent () {
 	var wire = kernel.findWire (this, this, pin);
 	wire.deliver (data);	  
     };
-    this.anyPartHasInputs = function () {
-	var ps = this.parts;
-	var x0 = ps[0];
-	var x1 = ps[1];
-	var b  = (0 < this.inputQueue.length);
-	var b0 = x0.anyPartHasInputs();
-	var b1 = x1.anyPartHasInputs();
-	var pbs = ps.some(anyPartHasInputs);
-	return (0 < this.inputQueue.length) || ps.some(anyPartHasInputs);
+    this.hasInputs = function () {
+	return (0 < this.inputQueue.length) || 
+	    this.parts.some(child => child.hasInputs());
     };
     this.consumeOneEventIfReady = function () {
-        parts.forEach(consumeOneEventIfReady);
+        this.parts.forEach(p => p.consumeOneEventIfReady);
 	if (this.ready()) {
 	    var event = this.inputQueue.pop ();
 	    this.react (event);
@@ -158,7 +152,7 @@ function Kernel (top) {
     };
 
     this.dispatch = function () {
-	while (this.topPart.anyPartHasInputs()) {
+	while (this.topPart.hasInputs()) {
 	    this.topPart.consumeOneEventIfReady();
 	}
     };
