@@ -151,9 +151,8 @@ function Kernel (top) {
     };
 
     this.dispatch = function () {
-	this.allParts.forEach (consumeOneEventIfReady);
 	while (this.topPart.anyPartHasInputs()) {
-	    this.topPart.forEach (consumeOneEventIfReady);
+	    this.topPart.consumeOneEventIfReady();
 	}
     };
 };
