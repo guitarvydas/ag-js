@@ -23,7 +23,7 @@ function TextComponent (id) {
 	    reader.onload = function (e) {
 		var contents = e.target.result;
 		document.getElementById(id).innerHTML =
-		    "4FILE REQUESTED: " + event.data +
+		    "FILE REQUESTED: " + event.data +
 		    "<BR>FILE CONTENTS:<BR>" + contents;
 	    };
 	    reader.readAsText(event.data);
