@@ -1,0 +1,15 @@
+AG {
+  Program = (AGCode | htmlStuff | htmlEnd)+
+  AGCode = AGInput | AGP | Schematic
+  AGInput = "<ag-input>" htmlStuff "</ag-input>"
+  AGP = "<ag-p>" htmlStuff* "</ag-p>"
+  Schematic = "<schematic>" SchematicStuff "</schematic>"
+  SchematicStuff = Part | Wire
+  htmlStuff = ~"<" any
+  htmlEnd = "</"
+  Part = "<part>" ID "</part>"
+  Wire = "wire"
+  ID = "id" "=" string
+  string = "\"" notDQuote* "\""
+  notDQuote = ~"\"" any
+}

@@ -1,0 +1,20 @@
+<html> <head>
+    <title>Simple Example Concurrent File Loader</title>
+  </head>
+
+  <body>
+    <h1></h1>
+      <div>
+        <ag-input type="file" id="fileToLoad1" onchange="fileToLoad1.react({pin:'changed',data:null})"></ag-input>
+	<ag-p id="text1"></ag-p>
+	<schematic id="top">
+	  <part>id="text"</part>
+	  <part>id="fileToLoad1"</part>
+	  <wire>
+	    <sender> id="fileToLoad1" pin="filedescriptor" </sender>
+	    <receiver> id="text1" pin="setText" </receiver>
+	  </wire>
+	</schematic>
+      </div>
+  </body>
+</html>
