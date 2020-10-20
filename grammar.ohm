@@ -7,16 +7,17 @@ AG {
   AGschematic = "<schematic" ID ">" PartsList WireList "</schematic>"
   PartsList = AGpart+
   WireList = AGwire+
-  AGpart = "<part" ID ">" "</part>"
+  AGpart = "<part" REF "/>"
   AGwire = "<wire>" AGsender ReceiverList "</wire>"
-  AGsender = "<sender" ID Pin ">" "</sender>"
+  AGsender = "<sender" REF Pin "/>"
   ReceiverList = AGreceiver+
-  AGreceiver = "<receiver" ID Pin ">" "</receiver>"
+  AGreceiver = "<receiver" REF Pin "/>"
 
   agElement = "<ag-input" | "<ag-p"| "<schematic" | "<part" | "<wire" | "<sender" | "<receiver"
   htmlStuff = ~agElement any
   Type = "type" "=" string
   ID = "id" "=" string
+  REF = "ref" "=" string
   Pin = "pin" "=" string
   OnChange = "onchange" "=" string
   string = "\"" notDQuote* "\""
