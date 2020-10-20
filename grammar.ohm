@@ -1,15 +1,24 @@
 AG {
-  Program = (AGCode | htmlStuff | htmlEnd)+
-  AGCode = AGInput | AGP | Schematic
-  AGInput = "<ag-input>" htmlStuff "</ag-input>"
-  AGP = "<ag-p>" htmlStuff* "</ag-p>"
-  Schematic = "<schematic>" SchematicStuff "</schematic>"
-  SchematicStuff = Part | Wire
-  htmlStuff = ~"<" any
-  htmlEnd = "</"
-  Part = "<part>" ID "</part>"
-  Wire = "wire"
+  Program = PGM+ end
+  PGM = AGInput | AGP | AGschematic | htmlStuff
+  AGInput = "<ag-input" Type ID OnChange ">" "</ag-input>"
+  AGP = "<ag-p" ID ">" "</ag-p>"
+
+  AGschematic = "<schematic" ID ">" PartsList WireList "</schematic>"
+  PartsList = AGpart+
+  WireList = AGwire+
+  AGpart = "<part" ID ">" "</part>"
+  AGwire = "<wire>" AGsender ReceiverList "</wire>"
+  AGsender = "<sender" ID Pin ">" "</sender>"
+  ReceiverList = AGreceiver+
+  AGreceiver = "<receiver" ID Pin ">" "</receiver>"
+
+  agElement = "<ag-input" | "<ag-p"| "<schematic" | "<part" | "<wire" | "<sender" | "<receiver"
+  htmlStuff = ~agElement any
+  Type = "type" "=" string
   ID = "id" "=" string
+  Pin = "pin" "=" string
+  OnChange = "onchange" "=" string
   string = "\"" notDQuote* "\""
   notDQuote = ~"\"" any
 }
