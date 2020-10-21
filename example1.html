@@ -33,7 +33,7 @@
       <script>
 	var part2 = new TextComponent ("part2");
 
-	/* This is a function that has 3 possible outcomes, all asynchronous.
+	/* This is a function that has 4 possible outcomes, all asynchronous.
 	 It is best represented as a diagram.
 	 The text version (below) is "hard" to read and to comprehend */
 	/* the following is not recommended - it will be fixed later */
@@ -61,6 +61,8 @@
                     reader.abort ();
                     return;
 		};
+
+		// timeout is not handled in this example-only code (maybe the operating system returns onerror for timeout?)
 
 		// fire the non-waiting read and let the event handlers (above) handle the outcome
 		reader.readAsText(event.data);
