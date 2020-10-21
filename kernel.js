@@ -35,11 +35,13 @@ function Kernel (top) {
 	var i;
 	for (i = 0; i < schematic.wires.length ; i += 1) {
 	    var sender = schematic.wires[i].sender;
+	    console.log(sender.part == senderPart);
+	    console.log(sender.pin == senderPin);
 	    if (sender.part == senderPart && sender.pin == senderPin) {
 		return schematic.wires[i];
 	    }
 	}
-	throw "can't find wire for {" + part.name + ", " + outputPin + "}";
+	throw "can't find wire for {" + senderPart.name + ", " + senderPin + "} in " + schematic.name;
     };
     
     this.send = function (part, outputEvent) {

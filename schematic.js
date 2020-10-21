@@ -26,13 +26,13 @@ function SchematicComponent () {
     };
 
     this.parts = [];  // initialized by programmer
-    this.initializeParts (arr) { // called by programmer with an array of parts
+    this.initializeParts = function (arr) { // called by programmer with an array of parts
 	arr.forEach (part => { part.parent = this; });
 	this.parts = arr;
     };
 
     this.wires = [];  // initialized by programmer
-    this.initializeWires (arr) { // called by programmer with an array of wires
+    this.initializeWires = function (arr) { // called by programmer with an array of wires
 	this.wires = arr;
     };
 };

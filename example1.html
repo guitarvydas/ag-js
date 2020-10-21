@@ -2,13 +2,10 @@
 <html> <head>
     <title>Simple Example Concurrent File Loader</title>
 
-    <script src="kernel">
-      var kernel = new Kernel (topLevel);
-    </script>
-
-    <script src="schematic"></script>
-    <script src="fileselector"></script>
-    <script src="text"></script>
+    <script src="./kernel.js"></script>
+    <script src="./schematic.js"></script>
+    <script src="./fileselector.js"></script>
+    <script src="./text.js"></script>
     
   </head>
 
@@ -49,7 +46,7 @@
 		reader.onload = function (e) {
                     console.log("onload");
 		    var contents = e.target.result;
-		    document.getElementById(id).innerHTML =
+		    document.getElementById("part2").innerHTML =
 			"FILE REQUESTED: " + event.data +
 			"<BR>FILE CONTENTS:<BR>" + contents;
                     return;
@@ -75,8 +72,12 @@
       <script>
 	// initialization of topLevel part
 	topLevel.initializeParts( [part1, part2] );
-	/* map each output pin {part,pin} to an array of receivers [{part,pin},...] */ ]);
-	topLevel.initializeWires ([new Wire ({sender : {part: part1, pin: 'filename'}, receivers : [{part: part2, pin:'setText'}]}); 
+	/* map each output pin {part,pin} to an array of receivers [{part,pin},...] */
+	topLevel.initializeWires ([ new Wire ({sender : {part: part1, pin: 'changed'}, receivers : [{part: part2, pin:'setText'}]}) ]); 
+      </script>
+
+      <script>
+	var kernel = new Kernel (topLevel);
       </script>
 
     </div>
