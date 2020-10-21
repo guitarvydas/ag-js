@@ -1,0 +1,16 @@
+    <repeat>
+      <input type="file" id="part1" onchange="sendChanged()">…</input>
+      <p id="part2" onreact="display()"></p>
+      <script id="callbackLogic"> ... </script>
+    </repeat>
+
+    <layer id="happyPath">
+      <wire>
+	<sender ref="[part1,'changed']" />
+	<receiver ref="[callbackLogic,'file']" />
+      </wire
+      <wire> 
+	<sender ref="[callbackLogic,'good']" />
+	<receiver ref="[part2,'displayText']" />
+      </wire>
+    </layer>

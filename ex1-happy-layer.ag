@@ -1,0 +1,30 @@
+  <input type="file" id="part1" onchange="sendChanged()">…</input>
+  <p id="part2" onreact="display()"></p>
+  <script id="callbackLogic"> ... </script>
+  <layers>
+    <include src="happyPath.hti" />
+    <include src="errorPath.hti" />
+    <include src="timeoutPath.hti" />
+    <layer id="errorPath">
+      <wire>
+	<sender ref="[part1,'changed']" />
+	<receiver ref="[callbackLogic,'file']" />
+      </wire
+      <wire> 
+	<sender ref="[callbackLogic,'good']" />
+	<receiver ref="[part2,'displayText']" />
+      </wire>
+    </layer>
+    <layer id="timeoutPath">
+      <wire>
+	<sender ref="[part1,'changed']" />
+	<receiver ref="[callbackLogic,'file']" />
+      </wire
+      <wire> 
+	<sender ref="[callbackLogic,'good']" />
+	<receiver ref="[part2,'displayText']" />
+      </wire>
+    </layer>
+  </layers>
+</div>
+

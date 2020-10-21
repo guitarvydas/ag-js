@@ -1,0 +1,13 @@
+<layer id="errorPath">
+  <input type="file" id="part1" onchange="sendChanged()">…</input>
+  <part id="callbackLogic" src="ex1-callbackLogic.js" onreact="callbackLogicReact()" />
+  <p id="errorHandler" onreact="error()"></p>
+  <wire>
+    <sender ref="[part1,'changed']" />
+    <receiver ref="[callbackLogic,'file']" />
+  </wire
+  <wire> 
+    <sender ref="[callbackLogic,'error']" />
+    <receiver ref="[errorHandler,'error']" />
+  </wire>
+</layer>

@@ -1,204 +1,84 @@
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
 <html> <head>
     <title>Simple Example Concurrent File Loader</title>
+
+    <script src="kernel">
+      var kernel = new Kernel (topLevel);
+    </script>
+
+    <script src="schematic"></script>
+    <script src="fileselector"></script>
+    <script src="text"></script>
+    
   </head>
 
   <body>
     <h1></h1>
-
-</script>
-
-<div>
-  <p id="text1"></p>
-<script>
-function TextComponent (id) {
-    this.parent = null;
-    this.id = id;
-    this.isSchematic = false;
-    this.inputQueue = [];
-    this.isReady = function () { return ( this.inputQueue.length > 0 ); };
-    this.react = function (event) {
-
-        console.log ("TextComponent react: " + event);
-
-	if (event.pin == "setText") {
-	    var reader = new FileReader();
-
-            // set up event handlers for onload, onerror, onabort
-	    reader.onload = function (e) {
-                console.log("onload");
-		var contents = e.target.result;
-		document.getElementById(id).innerHTML =
-		    "FILE REQUESTED: " + event.data +
-		    "<BR>FILE CONTENTS:<BR>" + contents;
-                return;
-            };
-            reader.onerror = function (event) {
-                console.log("onerror: Failed to read file!\n\n" + reader.error);
-                reader.abort ();
-                return;
-            };
-            reader.onabort = function (event) {
-                console.log("onabort: No Response (timeout)!\n\n");
-                reader.abort ();
-                return;
-            };
-
-            // fire the non-waiting read and let the event handlers (above) handle the outcome
-            reader.readAsText(event.data);
-
-        };
-    };
-    this.hasInputs = function () {
-	return (0 < this.inputQueue.length);
-    };
-    this.consumeOneEventIfReady = function () {
-	if (this.isReady()) {
-            var event = this.inputQueue.pop ();
-	    this.react (event);
-	}
-    };
-}
-var text1 = new TextComponent ("text1");
-</script>
-
-<input type="file" id="fileToLoad1" onchange="fileToLoad1.react({pin:'changed',data:null})"></input>
-<script>
-function FileSelectorComponent (id) {
-    this.parent = null;
-    this.id = id;
-    this.isSchematic = false;
-    this.inputQueue = [];
-    this.isReady = function () { return ( this.inputQueue.length > 0 ); };
-    this.react = function (event) {
-	if (event.pin == "changed") {
-	    var fileDescriptor = document.getElementById(id).files[0];
-	    kernel.send (this, {pin: 'filename', data: fileDescriptor});
-	    kernel.io ();
-	}
-    };
-    this.hasInputs = function () {
-	return (0 < this.inputQueue.length);
-    };
-    this.consumeOneEventIfReady = function () {
-	if (this.isReady()) {
-	    var event = this.inputQueue.pop ();
-	    this.react (event);
-	}
-    };
-};
-var fileToLoad1 = new FileSelectorComponent ("fileToLoad1");
-</script>
-
-<script>
-function TopComponent () {
-    this.isSchematic = true; 
-    this.text = text1;
-    this.fileSelector = fileToLoad1;
-    this.inputQueue = []; 
-    this.wires = [];
-    this.wires[0] = new Wire ({ sender : {part: this.fileSelector, pin: 'filename'}, receivers : [{part: this.text, pin:'setText'}] }); // map each output pin {part,pin} to an array of receivers [{part,pin},...]
-    this.parts = [this.text,this.fileSelector];
-    this.text.parent = this;
-    this.fileSelector.parent= this;
-    this.isBusy = function () { return this.parts.some(isBusy); };
-    this.isReady = function () { 
-	return ( 
-	    (this.inputQueue.length > 0)
-		&& (!this.isBusy())
-	)};
-    this.react = function (event) {
-	var pin = event.pin;
-	var data = event.data;
-	var wire = kernel.findWire (this, this, pin);
-	wire.deliver (data);	  
-    };
-    this.hasInputs = function () {
-	return (0 < this.inputQueue.length) || 
-	    this.parts.some(child => { return child.hasInputs() });
-    };
-    this.consumeOneEventIfReady = function () {
-        this.parts.forEach(p => p.consumeOneEventIfReady());
-	if (this.isReady()) {
-	    var event = this.inputQueue.pop ();
-	    this.react (event);
-	}
-    };
-};
-
-function Wire (wobject) {
-    this.sender = wobject.sender;
-    this.receivers = wobject.receivers;
-    this.isNC = wobject.isNC;
-    this.senderPin = wobject.senderPin;
-    this.lockReceivers = function () { // implement if using multi-tasking or bare-metal
-	// disable preemption
-	// this.receivers.forEach (lock);
-	// enable preemption
-    };
-    this.unlockReceivers = function () { // implement if using multi-tasking or bare-metal
-	// disable preemption
-	// this.receivers.forEach (unlock);
-	// enable preemption
-    };
-    this.deliver = function (data) {
-	if (this.isNC) {
-	    console.log("Part " + sender.name + " outputs " + data + " on pin " + senderPin);
-	} else {
-	    this.lockReceivers ();
-	    this.receivers.forEach(
-		function (r) {
-		    var pin = r.pin;
-		    r.part.inputQueue.push ( {pin, data} );
-		})
-	    this.unlockReceivers ();
-	}
-    };
-};
-
-function Kernel (top) {
-    this.topPart = top;
-    this.allParts = [];
-    this.findWire = function (schematic, senderPart, senderPin) {
-	var i;
-	for (i = 0; i < schematic.wires.length ; i += 1) {
-	    var sender = schematic.wires[i].sender;
-	    if (sender.part == senderPart && sender.pin == senderPin) {
-		return schematic.wires[i];
-	    }
-	}
-	throw "can't find wire for {" + part.name + ", " + outputPin + "}";
-    };
-    
-    this.send = function (part, outputEvent) {
-	var outputPin = outputEvent.pin; 
-	var outputData = outputEvent.data;
-	var parentSchematic = part.parent;
-	var outputWire = this.findWire (part.parent, part, outputPin);
-	outputWire.deliver (outputData);
-    };
-    
-    this.io = function () {
-	this.dispatch ();
-    };
-
-    this.dispatch = function () {
-	while (this.topPart.hasInputs()) {
-	    this.topPart.consumeOneEventIfReady();
-	}
-    };
-};
-
-</script>
-<script>
-  var topPart = new TopComponent();
-  var kernel = new Kernel (topPart);
-</script>
+    <div id="topLevel">
+      <script>
+	var topLevel = new SchematicComponent();  // see initialization, below
+      </script>
+      
+      
+      <input type="file" id="part1" onchange="sendChanged()})"></input>
+      <script>
+	var part1 = new FileSelectorComponent ("part1");
+	function sendChanged () {
+	    console.log("part1 sendChanged()");
+            var fileDescriptor = document.getElementById("part1").files[0];
+            kernel.send (this, {pin: 'changed', data: fileDescriptor});
+            kernel.io ();
+	};
+      </script>
       
 
-</div>
+      <p id="part2"></p>
+      <script>
+	var part2 = new TextComponent ("part2");
 
-<hr>
-<address></address>
-<!-- hhmts start -->Last modified: Fri Oct 16 16:35:16 EDT 2020 <!-- hhmts end -->
-</body> </html>
+	/* This is a function that has 3 possible outcomes, all asynchronous.
+	 It is best represented as a diagram.
+	 The text version (below) is "hard" to read and to comprehend */
+	/* the following is not recommended - it will be fixed later */
+	part2.react = function (event) {
+            console.log ("part2 reacts to event: " + event);
+	    if (event.pin == "setText") {
+		var reader = new FileReader();
+
+		// set up event handlers for onload, onerror, onabort
+		reader.onload = function (e) {
+                    console.log("onload");
+		    var contents = e.target.result;
+		    document.getElementById(id).innerHTML =
+			"FILE REQUESTED: " + event.data +
+			"<BR>FILE CONTENTS:<BR>" + contents;
+                    return;
+		};
+		reader.onerror = function (event) {
+                    console.log("onerror: Failed to read file!\n\n" + reader.error);
+                    reader.abort ();
+                    return;
+		};
+		reader.onabort = function (event) {
+                    console.log("onabort: No Response (timeout)!\n\n");
+                    reader.abort ();
+                    return;
+		};
+
+		// fire the non-waiting read and let the event handlers (above) handle the outcome
+		reader.readAsText(event.data);
+
+            };
+	};
+      </script>
+
+      <script>
+	// initialization of topLevel part
+	topLevel.initializeParts( [part1, part2] );
+	/* map each output pin {part,pin} to an array of receivers [{part,pin},...] */ ]);
+	topLevel.initializeWires ([new Wire ({sender : {part: part1, pin: 'filename'}, receivers : [{part: part2, pin:'setText'}]}); 
+      </script>
+
+    </div>
+  </body>
+</html>

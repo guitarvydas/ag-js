@@ -1,0 +1,13 @@
+<layer id="happyPath">
+  <input type="file" id="part1" onchange="sendChanged()">…</input>
+  <part id="callbackLogic" src="ex1-callbackLogic.js" onreact="callbackLogicReact()" />
+  <p id="part2" onreact="display()"></p>
+  <wire>
+    <sender ref="[part1,'changed']" />
+    <receiver ref="[callbackLogic,'file']" />
+  </wire
+  <wire> 
+    <sender ref="[callbackLogic,'good']" />
+    <receiver ref="[part2,'displayText']" />
+  </wire>
+</layer>

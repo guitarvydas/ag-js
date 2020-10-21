@@ -1,0 +1,9 @@
+<layer  
+  <wire> 
+    <sender ref="[part1,'changed']" />
+    <receiver ref="[callbackLogic,'file']" />
+  </wire>
+  <wire> 
+    <sender ref="[callbackLogic,'good']" />
+    <receiver ref="[part2,'display']" />
+  </wire>

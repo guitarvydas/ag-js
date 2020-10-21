@@ -4,17 +4,13 @@
 
   <body>
     <h1></h1>
-      <div>
-        <ag-input type="file" id="fileToLoad1" onchange="fileToLoad1.react({pin:'changed',data:null})"></ag-input>
-	<ag-p id="text1"></ag-p>
-	<schematic id="top">
-	  <part ref="text" />
-	  <part ref="fileToLoad1" />
-	  <wire>
-	    <sender ref="fileToLoad1" pin="filedescriptor" />
-	    <receiver ref="text1" pin="setText" />
-	  </wire>
-	</schematic>
-      </div>
+    <div id="topLevel">
+      <input type="file" id="part1" onchange="sendChanged()"> Select File</input>
+      <p id="part2" onreact="display()"></p>
+      <wire> 
+	<sender ref="[part1,'changed']" />
+	<receiver ref="[part2,'displayText']" />
+      </wire>
+    </div>
   </body>
 </html>
