@@ -16,17 +16,17 @@
     <h1></h1>
     <div id="topLevel">
       <script>
-	var topLevel = new SchematicComponent();  // see initialization, below
+	var topLevel = new SchematicComponent("topLevel");  // see initialization, below
       </script>
       
       
-      <input type="file" id="part1" onchange="sendChanged()})"></input>
+      <input type="file" id="part1" onchange="sendChanged()"></input>
       <script>
 	var part1 = new FileSelectorComponent ("part1");
 	function sendChanged () {
 	    console.log("part1 sendChanged()");
             var fileDescriptor = document.getElementById("part1").files[0];
-            kernel.send (this, {pin: 'changed', data: fileDescriptor});
+            kernel.send (part1, {pin: 'changed', data: fileDescriptor});
             kernel.io ();
 	};
       </script>
@@ -67,7 +67,7 @@
 
 		// fire the non-waiting read and let the event handlers (above) handle the outcome
 		reader.readAsText(event.data);
-
+		kernel.io ();
             };
 	};
       </script>

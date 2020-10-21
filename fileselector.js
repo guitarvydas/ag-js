@@ -16,4 +16,6 @@ function FileSelectorComponent (id) {
 	    this.react (event);
 	}
     };
+
+    this.react = function (event) { }; // default
 };
