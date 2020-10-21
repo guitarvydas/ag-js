@@ -20,14 +20,30 @@ function TextComponent (id) {
     this.react = function (event) {
 	if (event.pin == "setText") {
 	    var reader = new FileReader();
+
+            // set up event handlers for onload, onerror, onabort
 	    reader.onload = function (e) {
 		var contents = e.target.result;
 		document.getElementById(id).innerHTML =
 		    "FILE REQUESTED: " + event.data +
 		    "<BR>FILE CONTENTS:<BR>" + contents;
-	    };
-	    reader.readAsText(event.data);
-	}
+                return;
+            };
+            reader.onerror = function (event) {
+                alert("Failed to read file!\n\n" + reader.error);
+                reader.abort ();
+                return;
+            };
+            reader.onabort = function (event) {
+                alert("No Response (timeout)!\n\n");
+                reader.abort ();
+                return;
+            };
+
+            // fire the non-waiting read and let the event handlers (above) handle the outcome
+            reader.readAsText(event.data);
+
+        };
     };
     this.hasInputs = function () {
 	return (0 < this.inputQueue.length);
