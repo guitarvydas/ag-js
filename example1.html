@@ -18,11 +18,15 @@ function TextComponent (id) {
     this.inputQueue = [];
     this.isReady = function () { return ( this.inputQueue.length > 0 ); };
     this.react = function (event) {
+
+        console.log ("TextComponent react: " + event);
+
 	if (event.pin == "setText") {
 	    var reader = new FileReader();
 
             // set up event handlers for onload, onerror, onabort
 	    reader.onload = function (e) {
+                console.log("onload");
 		var contents = e.target.result;
 		document.getElementById(id).innerHTML =
 		    "FILE REQUESTED: " + event.data +
@@ -30,12 +34,12 @@ function TextComponent (id) {
                 return;
             };
             reader.onerror = function (event) {
-                alert("Failed to read file!\n\n" + reader.error);
+                console.log("onerror: Failed to read file!\n\n" + reader.error);
                 reader.abort ();
                 return;
             };
             reader.onabort = function (event) {
-                alert("No Response (timeout)!\n\n");
+                console.log("onabort: No Response (timeout)!\n\n");
                 reader.abort ();
                 return;
             };
