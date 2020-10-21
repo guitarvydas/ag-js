@@ -3,6 +3,6 @@
 * 3. compile test.ag to html, using Ohm-js (beginnings in grammar.ohm)
 * 4. create a diagram of this "system"
 * 5. compile diagrams to .ag, compile .ag to HTML
-* 6. use webworkers
+* 6. rewrite using webworkers
 
 
